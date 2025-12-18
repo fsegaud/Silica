@@ -28,7 +28,7 @@ ConsoleHelper.Separator();
 // Build paths.
 Params.SilicaPath = Path.Combine(Params.ObsidianProjectPath, ".silica");
 Params.DeployPath = Path.Combine(Params.SilicaPath, "www");
-string configFilePath = Path.Combine(Params.SilicaPath, "config.cfg");
+string configFilePath = Path.Combine(Params.SilicaPath, "config.json");
 
 // Set output.
 if (Directory.Exists(Params.SilicaPath))

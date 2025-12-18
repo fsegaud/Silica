@@ -1,0 +1,181 @@
+/* MD */
+h1 {
+    margin-top: 0;
+    text-align: center;
+    margin-bottom: 2em;
+}
+
+h2 {
+    margin-top: 2em;
+    border-bottom: 1px solid #333;
+}
+
+h3 {
+    margin-top: 2em;
+}
+
+h4 {
+    margin-top: 2em;
+}
+
+h5 {
+    margin-top: 2em;
+}
+
+h6 {
+    margin-top: 2em;
+}
+
+hr {
+    border: none;
+    background-color: #333;
+    height: 1px;
+}
+
+b {
+    color: #fff;
+}
+
+ul {
+    margin: 1em;
+}
+
+    ul ul {
+        margin: 0;
+    }
+
+ol {
+    margin: 1em;
+}
+
+    ol ol {
+        margin: 0;
+    }
+
+a {
+    color: deepskyblue;
+}
+
+    a:link {
+        color: deepskyblue;
+    }
+
+    a:visited {
+        color: deepskyblue;
+    }
+
+    a:hover {
+        color: lightskyblue;
+    }
+
+    a:active {
+        color: lightskyblue;
+    }
+
+img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+code {
+    font-family: Consolas;
+    font-size: 0.8em;
+    color: wheat;
+    border: 1px solid #222;
+    border-radius: 4px;
+    background-color: #181818;
+    padding: 0.1em 0.2em;
+}
+
+pre.code {
+    font-family: Consolas;
+    font-size: 0.8em;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background-color: #171e1f;
+    padding: 1em;
+    margin: 1em 0;
+	overflow-y: scroll;
+	overflow-y: hidden;
+}
+
+blockquote {
+    background-color: #181818;
+    border: 1px solid #333;
+    border-radius: 4px;
+    border-left: 8px solid #333;
+    padding: 1em;
+    margin: 1em 0;
+}
+
+table {
+    border-spacing: 0;
+    border: 1px solid #e6e8ea;
+    margin: 1em 0;
+    border-collapse: collapse;
+}
+
+    table thead tr td {
+        font-weight: bold;
+        background-color: #181818;
+        border: 1px solid #333;
+    }
+
+    table tr:nth-child(odd) {
+        background-color: #181818;
+    }
+
+    table tr:nth-child(even) {
+        background-color: #111;
+    }
+
+    table tr td {
+        padding: 0.4em 1em;
+        border: 1px solid #333;
+    }
+
+        table tr td.center {
+            text-align: center;
+        }
+
+        table tr td.right {
+            text-align: right;
+        }
+
+/* C# */
+span.csharp-string {
+    color: wheat;
+}
+
+span.csharp-comment {
+    color: yellowgreen;
+}
+
+span.csharp-keyword {
+    color: lightskyblue;
+}
+
+span.csharp-class {
+    color: lightcoral;
+}
+
+span.csharp-function {
+    color: lightcoral;
+}
+
+/* Json */
+span.json-key {
+    color: hotpink;
+}
+
+span.json-string {
+    color: wheat;
+}
+
+span.json-numeric {
+    color: lightskyblue;
+}
+
+span.json-keyword {
+    color: lightskyblue;
+}
