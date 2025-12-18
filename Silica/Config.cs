@@ -2,11 +2,7 @@ namespace Silica;
 
 public static class Config
 {
-    public static string HomePageName => _userConfig.UserHomePageName;
-    public static string Css => _userConfig.UserCss;
-    public static string[] ExcludedFiles => _userConfig.UserExcludedFiles;
-    
-    private static UserConfig _userConfig = null!;
+    public static ExportConfig Export = null!;
     
     public static bool CreateFileIfNotExists(string filePath)
     {
@@ -15,9 +11,9 @@ public static class Config
             return false;
         }
 
-        _userConfig = new UserConfig();
+        Export = new ExportConfig();
             
-        string json = Newtonsoft.Json.JsonConvert.SerializeObject(_userConfig, Newtonsoft.Json.Formatting.Indented);
+        string json = Newtonsoft.Json.JsonConvert.SerializeObject(Export, Newtonsoft.Json.Formatting.Indented);
         File.WriteAllText(filePath, json);
 
         return true;
@@ -31,7 +27,7 @@ public static class Config
         }
         
         string json = File.ReadAllText(filePath);
-        _userConfig = Newtonsoft.Json.JsonConvert.DeserializeObject<UserConfig>(json)!;
+        Export = Newtonsoft.Json.JsonConvert.DeserializeObject<ExportConfig>(json)!;
         
         return true;
     }
@@ -61,11 +57,26 @@ public static class Config
         return false;
     }
 
-    private class UserConfig
+    public class ExportConfig
     {
-        public readonly string UserHomePageName = "Silica";
-        public readonly string UserCss = "light.css";
-        public readonly string[] UserExcludedFiles =
-            [".obsidian", ".silica", ".git", ".gitignore", ".gitattributes", "README.md", "LICENSE.md", "CHANGELOG.md"];
+        // ReSharper disable FieldCanBeMadeReadOnly.Global
+        // ReSharper disable ConvertToConstant.Global
+        public string HomePageName = "Silica";
+        public string CssStyle = "light.css";
+        public bool CssEmbedded = false;
+        public string[] ExcludedFiles =
+            [".obsidian", ".silica", ".git", ".gitignore", "README.md"];
+        // ReSharper restore FieldCanBeMadeReadOnly.Global
+        // ReSharper restore ConvertToConstant.Global
+
+        public override string ToString()
+        {
+            string result = "Current configuration:";
+            result += $"\n    - HomePageName: {HomePageName}";
+            result += $"\n    - CssStyle: {CssStyle}";
+            result += $"\n    - CssEmbedded: {CssEmbedded}";
+            result += $"\n    - ExcludedFiles: {string.Join(", ", ExcludedFiles)}";
+            return result;
+        }
     }
 }

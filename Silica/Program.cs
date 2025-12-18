@@ -3,14 +3,14 @@
 // Get parameters.
 if (args.Length == 0)
 {
-    Console.Error.WriteLine("Use : Silica.exe <ObsidianProjectPath> [-v]");
+    ConsoleHelper.Error("Use : Silica.exe <ObsidianProjectPath> [-v]");
     return -1;
 }
 
 Params.ObsidianProjectPath = args[0];
 if (!Path.Exists(Params.ObsidianProjectPath))
 {
-    Console.Error.WriteLine("Error: Could not find \"{0}\"", Params.ObsidianProjectPath);
+    ConsoleHelper.Error($"Error: Could not find \"{Params.ObsidianProjectPath}\"");
     return -1;
 }
 
@@ -18,8 +18,9 @@ Params.Verbose = args.Contains("-v");
 
 // Print parameters
 ConsoleHelper.AppLogo(); 
+ConsoleHelper.Disclaimer();
 ConsoleHelper.Separator();
-Console.WriteLine("[Parameters]");
+ConsoleHelper.Title("[Parameters]");
 Console.WriteLine("Obsidian Project Path: \"{0}\"", Params.ObsidianProjectPath);
 Console.WriteLine("Verbose mode: {0}", Params.Verbose ? "On" : "Off");
 ConsoleHelper.Separator();
@@ -38,13 +39,14 @@ if (Directory.Exists(Params.SilicaPath))
 
 if (!Directory.CreateDirectory(Params.SilicaPath).Exists)
 {
-    Console.Error.WriteLine($"Error: Could not create directory \"{Params.SilicaPath}\"");
+    ConsoleHelper.Error($"Error: Could not create directory \"{Params.SilicaPath}\"");
     return -1;
 }
 
 Config.TryRestoreConfigFile(configFilePath);
 
 // Get user config.
+ConsoleHelper.Title("[Configuration]");
 if (Config.CreateFileIfNotExists(configFilePath))
 {
     Console.WriteLine("Created default config file.");
@@ -58,6 +60,7 @@ else
 }
 
 Config.LoadFromFile(configFilePath);
+Console.WriteLine(Config.Export);
 
 ConsoleHelper.Separator();
 
@@ -65,7 +68,7 @@ ConsoleHelper.Separator();
 
 // Print file tree.
 // TODO: Split parsing from printing.
-Console.WriteLine("[Parsing notes...]");
+ConsoleHelper.Title("[Parsing]");
 ConsoleHelper.ParseNotes(Params.ObsidianProjectPath);
 ConsoleHelper.Separator();
 
@@ -88,35 +91,67 @@ namespace Silica
     {
         public static void AppLogo()
         {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.WriteLine();
             Console.WriteLine("    █████████   ███  ████   ███    O b s i d i a n  ");
             Console.WriteLine("    ███░░░░░███ ░░░  ░░███  ░░░    Deployment Tool  ");
             Console.WriteLine("   ░███    ░░░  ████  ░███  ████   ██████   ██████  ");
-            Console.WriteLine("   ░░█████████ ░░███  ░███ ░░███  ███░░███ ░░░░░███ "); 
+            Console.WriteLine("   ░░█████████ ░░███  ░███ ░░███  ███░░███ ░░░░░███ ");
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("    ░░░░░░░░███ ░███  ░███  ░███ ░███ ░░░   ███████ ");
             Console.WriteLine("    ███    ░███ ░███  ░███  ░███ ░███  ███ ███░░███ ");
             Console.WriteLine("   ░░█████████  █████ █████ █████░░██████ ░░████████");
             Console.WriteLine("    ░░░░░░░░░  ░░░░░ ░░░░░ ░░░░░  ░░░░░░   ░░░░░░░░ ");
             Console.WriteLine();
+            Console.ResetColor();
+        }
+
+        public static void Disclaimer()
+        {
+            Console.BackgroundColor = ConsoleColor.DarkYellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("╔════════════════════[ DISCLAIMER ]════════════════════╗");
+            Console.WriteLine("║     Obsidian tables are not currently supported.     ║");
+            Console.WriteLine("╚══════════════════════════════════════════════════════╝");
+            Console.ResetColor();
         }
         public static void Separator()
         {
             Console.WriteLine("--------------------------------------------------------");
+        }
+
+        public static void Error(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.Error.WriteLine(message);
+            Console.ResetColor();
+        }
+        
+        public static void Warning(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+        
+        public static void Title(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine(message);
+            Console.ResetColor();
         }
         
         public static void ParseNotes(string path, int depth = 0)
         {
             foreach (string dir in Directory.EnumerateDirectories(path))
             {
-                if (Path.GetFileName(dir).StartsWith('.'))
+                if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(dir)))
                 {
+                    if (Params.Verbose) Warning($"{new string(' ', depth * 4)}Excluded \"{dir}\"");
                     continue;
                 }
 
-                if (Params.Verbose)
-                {
-                    Console.WriteLine("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, dir));
-                }
+                if (Params.Verbose) Console.WriteLine("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, dir));
 
                 ParseNotes(dir, depth + 1);
             }
@@ -125,19 +160,20 @@ namespace Silica
             {
                 // TODO: Also exclude templates?
                 // TODO: Bases support? NOP!!! -> Exclude .base files.
-                // TODO: Exclude list for README.md?
                 
-                // Exclude .obsidian directory (also .git and .silica).
-                // TODO: Exclude list (json?)
-                if (Path.GetFileName(file).StartsWith('.'))
+                if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(file)))
                 {
+                    if (Params.Verbose) Warning($"{new string(' ', depth * 4)}Excluded \"{file}\"");
                     continue;
                 }
 
-                if (Params.Verbose)
+                if (Path.GetFileName(file).EndsWith(".base"))
                 {
-                    Console.Write("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, file));
+                    Error($"{new string(' ', depth * 4)}Skipped \"{Path.GetFileName(file)}\". Bases are not supported.");
+                    continue;
                 }
+
+                if (Params.Verbose) Console.Write("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, file));
 
                 //// Parsing
                 
@@ -151,13 +187,10 @@ namespace Silica
                     }
                     catch (Exception e)
                     {
-                        Console.Error.WriteLine(e.Message);
+                        Error(e.Message);
                     }
 
-                    if (Params.Verbose)
-                    {
-                        Console.WriteLine($" -> {note}");
-                    }
+                    if (Params.Verbose) Console.WriteLine($" -> {note}");
                 }
                 
                 // TODO: Images
