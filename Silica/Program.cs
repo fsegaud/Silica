@@ -69,134 +69,73 @@ ConsoleHelper.Separator();
 // Print file tree.
 // TODO: Split parsing from printing.
 ConsoleHelper.Title("[Parsing]");
-ConsoleHelper.ParseNotes(Params.ObsidianProjectPath);
+ParseNotes(Params.ObsidianProjectPath);
 ConsoleHelper.Separator();
 
 return 0;
 
-namespace Silica
+static void ParseNotes(string path, int depth = 0)
 {
-    public static class Params
+    foreach (string dir in Directory.EnumerateDirectories(path))
     {
-        // User-defined params.
-        internal static string ObsidianProjectPath = string.Empty;
-        internal static bool Verbose;
-        
-        // Computed params.
-        internal static string SilicaPath = string.Empty;
-        internal static string DeployPath = string.Empty;
+        if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(dir)))
+        {
+            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded \"{dir}\"");
+            continue;
+        }
+
+        if (Params.Verbose) Console.WriteLine("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, dir));
+
+        ParseNotes(dir, depth + 1);
     }
 
-    public static class ConsoleHelper
+    foreach (string file in Directory.EnumerateFiles(path))
     {
-        public static void AppLogo()
+        if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(file)))
         {
-            Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.WriteLine();
-            Console.WriteLine("    █████████   ███  ████   ███    O b s i d i a n  ");
-            Console.WriteLine("    ███░░░░░███ ░░░  ░░███  ░░░    Deployment Tool  ");
-            Console.WriteLine("   ░███    ░░░  ████  ░███  ████   ██████   ██████  ");
-            Console.WriteLine("   ░░█████████ ░░███  ░███ ░░███  ███░░███ ░░░░░███ ");
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("    ░░░░░░░░███ ░███  ░███  ░███ ░███ ░░░   ███████ ");
-            Console.WriteLine("    ███    ░███ ░███  ░███  ░███ ░███  ███ ███░░███ ");
-            Console.WriteLine("   ░░█████████  █████ █████ █████░░██████ ░░████████");
-            Console.WriteLine("    ░░░░░░░░░  ░░░░░ ░░░░░ ░░░░░  ░░░░░░   ░░░░░░░░ ");
-            Console.WriteLine();
-            Console.ResetColor();
+            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded \"{file}\"");
+            continue;
         }
 
-        public static void Disclaimer()
+        if (Path.GetFileName(file).EndsWith(".base"))
         {
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("╔════════════════════[ DISCLAIMER ]════════════════════╗");
-            Console.WriteLine("║     Obsidian tables are not currently supported.     ║");
-            Console.WriteLine("╚══════════════════════════════════════════════════════╝");
-            Console.ResetColor();
-        }
-        public static void Separator()
-        {
-            Console.WriteLine("--------------------------------------------------------");
+            ConsoleHelper.Error($"{new string(' ', depth * 4)}Skipped \"{Path.GetFileName(file)}\". Bases are not supported.");
+            continue;
         }
 
-        public static void Error(string message)
+        if (Params.Verbose) Console.Write("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, file));
+
+        //// Parsing
+                
+        // Notes
+        if (file.EndsWith(".md"))
         {
-            Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.Error.WriteLine(message);
-            Console.ResetColor();
-        }
-        
-        public static void Warning(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(message);
-            Console.ResetColor();
-        }
-        
-        public static void Title(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.DarkCyan;
-            Console.WriteLine(message);
-            Console.ResetColor();
-        }
-        
-        public static void ParseNotes(string path, int depth = 0)
-        {
-            foreach (string dir in Directory.EnumerateDirectories(path))
+            ObNote note = ObNote.Parse(file);
+            try
             {
-                if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(dir)))
-                {
-                    if (Params.Verbose) Warning($"{new string(' ', depth * 4)}Excluded \"{dir}\"");
-                    continue;
-                }
-
-                if (Params.Verbose) Console.WriteLine("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, dir));
-
-                ParseNotes(dir, depth + 1);
+                note.WriteToDisk(Params.DeployPath);
+            }
+            catch (Exception e)
+            {
+                ConsoleHelper.Error(e.Message);
             }
 
-            foreach (string file in Directory.EnumerateFiles(path))
-            {
-                // TODO: Also exclude templates?
-                // TODO: Bases support? NOP!!! -> Exclude .base files.
-                
-                if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(file)))
-                {
-                    if (Params.Verbose) Warning($"{new string(' ', depth * 4)}Excluded \"{file}\"");
-                    continue;
-                }
-
-                if (Path.GetFileName(file).EndsWith(".base"))
-                {
-                    Error($"{new string(' ', depth * 4)}Skipped \"{Path.GetFileName(file)}\". Bases are not supported.");
-                    continue;
-                }
-
-                if (Params.Verbose) Console.Write("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, file));
-
-                //// Parsing
-                
-                // Notes
-                if (file.EndsWith(".md"))
-                {
-                    ObNote note = ObNote.Parse(file);
-                    try
-                    {
-                        note.WriteToDisk(Params.DeployPath);
-                    }
-                    catch (Exception e)
-                    {
-                        Error(e.Message);
-                    }
-
-                    if (Params.Verbose) Console.WriteLine($" -> {note}");
-                }
-                
-                // TODO: Images
-                
-                // TODO: Other files?
-            }
+            if (Params.Verbose) Console.WriteLine($" -> {note}");
         }
+                
+        // TODO: Images
+                
+        // TODO: Other files?
     }
+}
+
+public static class Params
+{
+    // User-defined params.
+    internal static string ObsidianProjectPath = string.Empty;
+    internal static bool Verbose;
+        
+    // Computed params.
+    internal static string SilicaPath = string.Empty;
+    internal static string DeployPath = string.Empty;
 }
