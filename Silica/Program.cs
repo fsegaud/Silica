@@ -43,6 +43,8 @@ if (!Directory.CreateDirectory(Params.SilicaPath).Exists)
     return -1;
 }
 
+Directory.CreateDirectory(Params.DeployPath);
+
 Config.TryRestoreConfigFile(configFilePath);
 
 // Get user config.
@@ -76,11 +78,12 @@ return 0;
 
 static void ParseNotes(string path, int depth = 0)
 {
+    // Directories.
     foreach (string dir in Directory.EnumerateDirectories(path))
     {
         if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(dir)))
         {
-            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded \"{dir}\"");
+            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded \"{dir}\".");
             continue;
         }
 
@@ -89,17 +92,20 @@ static void ParseNotes(string path, int depth = 0)
         ParseNotes(dir, depth + 1);
     }
 
+    // Files.
     foreach (string file in Directory.EnumerateFiles(path))
     {
+        // Excludes.
         if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(file)))
         {
-            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded \"{file}\"");
+            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded \"{file}\".");
             continue;
         }
 
+        // Skips.
         if (Path.GetFileName(file).EndsWith(".base"))
         {
-            ConsoleHelper.Error($"{new string(' ', depth * 4)}Skipped \"{Path.GetFileName(file)}\". Bases are not supported.");
+            ConsoleHelper.Error($"{new string(' ', depth * 4)}Skipped unsupported \"{Path.GetFileName(file)}\".");
             continue;
         }
 

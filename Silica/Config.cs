@@ -64,6 +64,7 @@ public static class Config
         public string HomePageName = "Silica";
         public string CssStyle = "light.css";
         public bool CssEmbedded = false;
+        public bool ShortUrl = false;
         public string[] ExcludedFiles =
             [".obsidian", ".silica", ".git", ".gitignore", "README.md"];
         // ReSharper restore FieldCanBeMadeReadOnly.Global
@@ -75,6 +76,7 @@ public static class Config
             result += $"\n    - HomePageName: {HomePageName}";
             result += $"\n    - CssStyle: {CssStyle}";
             result += $"\n    - CssEmbedded: {CssEmbedded}";
+            result += $"\n    - ShortUrl: {ShortUrl}";
             result += $"\n    - ExcludedFiles: {string.Join(", ", ExcludedFiles)}";
             return result;
         }

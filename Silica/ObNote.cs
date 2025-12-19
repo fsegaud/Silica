@@ -31,13 +31,59 @@ public class ObNote
 
     public void WriteToDisk(string deployPath)
     {
-        string finalPath = System.IO.Path.Combine(deployPath, Path + ".html");
+        // Open html skeleton.
+#if DEBUG
+        string resPath = "../../../../Res";
+#else
+        string resPath = "./Res";
+#endif
+        string finalPath;
+        if (Config.Export.ShortUrl)
+        {
+            finalPath = System.IO.Path.Combine(deployPath, $"{Id:0000}" + ".html");
+        }
+        else
+        {
+            finalPath = System.IO.Path.Combine(deployPath, Path + ".html");
+        }
+        
+        string htmlSkeletonPath = System.IO.Path.Combine(resPath, "Html/note.html");
+        string cssPath = System.IO.Path.Combine(resPath, $"Css/{Config.Export.CssStyle}");
+        
+        // Html.
+        string htmlContent = File.ReadAllText(htmlSkeletonPath);
+        htmlContent = htmlContent.Replace("@NoteName", Name);
+        
+        // Css.
+        if (Config.Export.CssEmbedded)
+        {
+            string cssContent = File.ReadAllText(cssPath);
+            htmlContent = htmlContent.Replace("@Css", $"<style> {cssContent} </style>");
+        }
+        else
+        {
+            File.Copy(cssPath, System.IO.Path.Combine(deployPath, "style.css"), true);
+            
+            string cssRelativePath = System.IO.Path.GetRelativePath(
+                System.IO.Path.Combine(System.IO.Path.GetDirectoryName(finalPath) ?? string.Empty), 
+                deployPath);
+            
+            cssRelativePath = System.IO.Path.Combine(cssRelativePath, "style.css");
+            htmlContent = htmlContent.Replace("@Css", $"<link rel=\"stylesheet\" href=\"{cssRelativePath}\">");
+        }
+        
+        // Markdown.
+        string mdToHtml = Parser.Markdown.ToHtml(Content);
+        htmlContent = htmlContent.Replace("@NoteContent", mdToHtml);
+        
+        // Write file.
+        // TODO: Short links.
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(finalPath) ?? string.Empty);
-        File.WriteAllText(finalPath, Content);
+        File.WriteAllText(finalPath, htmlContent);
     }
 
     public override string ToString()
     {
-        return $"{Id:0000}:{Path}";
+        return $"[{Id:0000}]{Path}";
     }
 }

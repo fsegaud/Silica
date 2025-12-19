@@ -47,6 +47,13 @@ public static class ConsoleHelper
         Console.ResetColor();
     }
     
+    public static void Debug(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkMagenta;
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
+    
     public static void Title(string message)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
