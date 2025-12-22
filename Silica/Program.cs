@@ -1,5 +1,9 @@
 ﻿using Silica;
 
+// TODO: HTML fragments.
+// TODO: Resource manager.
+// TODO: Linux support.
+
 // Get parameters.
 if (args.Length == 0)
 {

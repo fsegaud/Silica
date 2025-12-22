@@ -1,11 +1,45 @@
-/* Markdown light theme */
+/* Light theme */
+
+/* Global */
+
 body {
     font-family: 'Open Sans',Lato,sans-serif;
     font-size: 1em;
     color: #444;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
+    width: 1024px;
 }
+
+div#content {
+    margin-top: 2em;
+}
+
+h1#name {
+    margin-top: 0;
+    text-align: center;
+    margin-bottom: 1em;
+}
+
+div#tags {
+}
+
+span.tag {
+    font-size: 0.8em;
+    color: white;
+    background-color: royalblue;
+    border-radius: 1em;
+    padding: 0.2em 0.4em;
+}
+
+div#aliases {
+}
+
+span.alias {
+    font-style: italic;
+}
+
+/* Markdown */
 
 h1 {
     margin-top: 0;
@@ -149,4 +183,3 @@ table tr td.center {
 table tr td.right {
     text-align: right;
 }
-vvvvvvvv
