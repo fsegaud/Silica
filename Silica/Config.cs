@@ -73,11 +73,11 @@ public static class Config
         public override string ToString()
         {
             string result = "Current configuration:";
-            result += $"\n    - HomePageName: {HomePageName}";
-            result += $"\n    - CssStyle: {CssStyle}";
-            result += $"\n    - CssEmbedded: {CssEmbedded}";
-            result += $"\n    - ShortUrl: {ShortUrl}";
-            result += $"\n    - ExcludedFiles: {string.Join(", ", ExcludedFiles)}";
+            result += $"\n    - HomePageName: [cyan]{HomePageName}[/]";
+            result += $"\n    - CssStyle: [cyan]{CssStyle}[/]";
+            result += $"\n    - CssEmbedded: [cyan]{CssEmbedded}[/]";
+            result += $"\n    - ShortUrl: [cyan]{ShortUrl}[/]";
+            result += $"\n    - ExcludedFiles: [cyan]{string.Join(", ", ExcludedFiles)}[/]";
             return result;
         }
     }

@@ -1,10 +1,12 @@
 ﻿using Silica;
+using Spectre.Console;
 
 // TODO: HTML fragments.
 // TODO: Resource manager.
 // TODO: Linux support.
 
 // Get parameters.
+// TODO: Use Spectre.ConsoleCLI to parse arguments.
 if (args.Length == 0)
 {
     ConsoleHelper.Error("Use : Silica.exe <ObsidianProjectPath> [-v]");
@@ -14,7 +16,7 @@ if (args.Length == 0)
 Params.ObsidianProjectPath = args[0];
 if (!Path.Exists(Params.ObsidianProjectPath))
 {
-    ConsoleHelper.Error($"Error: Could not find \"{Params.ObsidianProjectPath}\"");
+    ConsoleHelper.Error($"Error: Could not find [cyan]{Params.ObsidianProjectPath}[/]");
     return -1;
 }
 
@@ -23,11 +25,9 @@ Params.Verbose = args.Contains("-v");
 // Print parameters
 ConsoleHelper.AppLogo(); 
 ConsoleHelper.Disclaimer();
-ConsoleHelper.Separator();
-ConsoleHelper.Title("[Parameters]");
-Console.WriteLine("Obsidian Project Path: \"{0}\"", Params.ObsidianProjectPath);
-Console.WriteLine("Verbose mode: {0}", Params.Verbose ? "On" : "Off");
-ConsoleHelper.Separator();
+ConsoleHelper.Title("Parameters");
+AnsiConsole.MarkupLine("Obsidian Project Path: [cyan]{0}[/]", Params.ObsidianProjectPath);
+AnsiConsole.MarkupLine("Verbose mode: {0}", Params.Verbose ? "[green]On[/]" : "[red]Off[/]");
 
 // Build paths.
 Params.SilicaPath = Path.Combine(Params.ObsidianProjectPath, ".silica");
@@ -43,7 +43,7 @@ if (Directory.Exists(Params.SilicaPath))
 
 if (!Directory.CreateDirectory(Params.SilicaPath).Exists)
 {
-    ConsoleHelper.Error($"Error: Could not create directory \"{Params.SilicaPath}\"");
+    ConsoleHelper.Error($"Error: Could not create directory [cyan]{Params.SilicaPath}[/]");
     return -1;
 }
 
@@ -52,48 +52,47 @@ Directory.CreateDirectory(Params.DeployPath);
 Config.TryRestoreConfigFile(configFilePath);
 
 // Get user config.
-ConsoleHelper.Title("[Configuration]");
+ConsoleHelper.Title("Configuration");
 if (Config.CreateFileIfNotExists(configFilePath))
 {
     Console.WriteLine("Created default config file.");
-    Console.WriteLine($"You can now edit config in \"{configFilePath}\". Press Enter when ready.");
+    AnsiConsole.MarkupLine($"You can now edit config in [cyan]{configFilePath}[/]. Press Enter when ready.");
     Console.ReadLine();
     Console.WriteLine("Done editing.");
 }
 else
 {
-    Console.WriteLine($"Using existing config file \"{configFilePath}\".");
+    AnsiConsole.MarkupLine($"Using existing config file [cyan]{configFilePath}[/].");
 }
 
 Config.LoadFromFile(configFilePath);
-Console.WriteLine(Config.Export);
-
-ConsoleHelper.Separator();
+if (Params.Verbose) AnsiConsole.MarkupLine(Config.Export.ToString());
 
 //// WIP //// WIP //// WIP //// WIP //// WIP //// WIP //// WIP //// WIP //// WIP //// WIP //// WIP //// WIP //// WIP ///
 
 // Print file tree.
 // TODO: Split parsing from printing.
-ConsoleHelper.Title("[Parsing]");
-ParseNotes(Params.ObsidianProjectPath);
-ConsoleHelper.Separator();
+ConsoleHelper.Title("Parsing");
+Tree root = new Tree(Params.ObsidianProjectPath);
+ParseNotes(Params.ObsidianProjectPath, root);
+if (Params.Verbose) AnsiConsole.Write(root);
 
 return 0;
 
-static void ParseNotes(string path, int depth = 0)
+static void ParseNotes(string path, IHasTreeNodes root, int depth = 0)
 {
     // Directories.
     foreach (string dir in Directory.EnumerateDirectories(path))
     {
         if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(dir)))
         {
-            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded \"{dir}\".");
+            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded [cyan]{dir}[/].");
             continue;
         }
 
-        if (Params.Verbose) Console.WriteLine("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, dir));
+        TreeNode node = root.AddNode(Path.GetFileName(dir));
 
-        ParseNotes(dir, depth + 1);
+        ParseNotes(dir, node, depth + 1);
     }
 
     // Files.
@@ -102,18 +101,18 @@ static void ParseNotes(string path, int depth = 0)
         // Excludes.
         if (Config.Export.ExcludedFiles.Contains(Path.GetFileName(file)))
         {
-            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded \"{file}\".");
+            if (Params.Verbose) ConsoleHelper.Warning($"{new string(' ', depth * 4)}Excluded [cyan]{file}[/].");
             continue;
         }
 
         // Skips.
         if (Path.GetFileName(file).EndsWith(".base"))
         {
-            ConsoleHelper.Error($"{new string(' ', depth * 4)}Skipped unsupported \"{Path.GetFileName(file)}\".");
+            ConsoleHelper.Error($"{new string(' ', depth * 4)}Skipped unsupported [cyan]{Path.GetFileName(file)}[/].");
             continue;
         }
 
-        if (Params.Verbose) Console.Write("{0}{1}", new string(' ', depth * 4), Path.GetRelativePath(Params.ObsidianProjectPath, file));
+        root.AddNode(Path.GetFileName(file));
 
         //// Parsing
                 
@@ -127,14 +126,12 @@ static void ParseNotes(string path, int depth = 0)
             }
             catch (Exception e)
             {
-                ConsoleHelper.Error(e.Message);
+                AnsiConsole.WriteException(e);
             }
-
-            if (Params.Verbose) Console.WriteLine($" -> {note}");
         }
-                
+
         // TODO: Images
-                
+
         // TODO: Other files?
     }
 }

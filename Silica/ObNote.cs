@@ -38,9 +38,9 @@ public class ObNote
     {
         // Open html skeleton.
 #if DEBUG
-        string resPath = "../../../../Res";
+        string resPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../../Res");
 #else
-        string resPath = "./Res";
+        string resPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "./Res");
 #endif
         string finalPath;
         if (Config.Export.ShortUrl)

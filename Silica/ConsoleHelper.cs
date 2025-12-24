@@ -1,3 +1,5 @@
+using Spectre.Console;
+
 namespace Silica;
 
 public static class ConsoleHelper
@@ -21,43 +23,32 @@ public static class ConsoleHelper
 
     public static void Disclaimer()
     {
-        Console.BackgroundColor = ConsoleColor.DarkYellow;
-        Console.ForegroundColor = ConsoleColor.Black;
-        Console.WriteLine("╔════════════════════[ DISCLAIMER ]════════════════════╗");
-        Console.WriteLine("║     Obsidian tables are not currently supported.     ║");
-        Console.WriteLine("╚══════════════════════════════════════════════════════╝");
-        Console.ResetColor();
-    }
-    public static void Separator()
-    {
-        Console.WriteLine("--------------------------------------------------------");
+        Panel panel = new Panel(new Markup("[gold1 invert]     Obsidian tables are not currently supported.     [/]"));
+        panel.Header = new PanelHeader("DISCLAIMER");
+        panel.Border = BoxBorder.Rounded;
+        panel.Padding = new Padding(0);
+        panel.BorderStyle = Style.Parse("invert");
+        panel.BorderColor(Color.Gold1);
+        AnsiConsole.Write(panel);
     }
 
     public static void Error(string message)
     {
-        Console.ForegroundColor = ConsoleColor.DarkRed;
-        Console.Error.WriteLine(message);
-        Console.ResetColor();
+        AnsiConsole.MarkupLine($"[red]{message}[/]");
     }
     
     public static void Warning(string message)
     {
-        Console.ForegroundColor = ConsoleColor.DarkYellow;
-        Console.WriteLine(message);
-        Console.ResetColor();
+        AnsiConsole.MarkupLine($"[gold1]{message}[/]");
     }
     
     public static void Debug(string message)
     {
-        Console.ForegroundColor = ConsoleColor.DarkMagenta;
-        Console.WriteLine(message);
-        Console.ResetColor();
+        AnsiConsole.MarkupLine($"[magenta]{message}[/]");
     }
     
     public static void Title(string message)
     {
-        Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.WriteLine(message);
-        Console.ResetColor();
+        AnsiConsole.Write(new Rule($"[deepskyblue1]{message}[/]").LeftJustified());
     }
 }
